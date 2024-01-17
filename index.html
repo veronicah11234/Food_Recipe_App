@@ -27,14 +27,14 @@ h1 {
     font-size: 2.5em;
 }
 
-h1::after {
+/* h1::after {
     content: '🍲';
     font-size: 1.5em;
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     margin-left: 10px;
-}
+} */
 
 div {
     margin-bottom: 15px;
@@ -54,7 +54,15 @@ select, button {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
-    background-color: #28c3b9;
+    /* background-color: #28c3b9; */
+}
+
+.meal-card{
+    /* background: #f00505; */
+}
+
+.meal-card button{
+    background: #cfcc11;
 }
 
 .recipe-item {
@@ -88,7 +96,7 @@ p {
     <!-- Main container for the entire app -->
     <div class="container" id="main-container">
         <!-- App title -->
-        <h1> Food Recipe App</h1>
+        <h1> Lewangui's Delicousy 🍲</h1>
         <!-- Dropdown for selecting recipe categories -->
         <div>
             <label for="category-dropdown">Select Category:</label>
@@ -100,6 +108,23 @@ p {
         </div>
         <!-- Container for displaying liked recipes -->
         <div id="liked-recipes-container"></div>
+
+        <div id="feedback-form">
+            <h2>Feedback</h2>
+            <form id="feedback-form">
+                <label for="feedback-name">Name:</label>
+                <input type="text" id="feedback-name" name="feedback-name" required>
+                <label for="feedback-email">Email:</label>
+                <input type="email" id="feedback-email" name="feedback-email" required>
+                <label for="feedback-message">Message:</label>
+                <textarea id="feedback-message" name="feedback-message" rows="4" required></textarea>
+                <button type="submit">Submit Feedback</button>
+            </form>
+        </div>
+
+        <!-- Display feedback message -->
+        <div id="feedback-response" style="display: none; margin-top: 20px;"></div>
+    </div>
     </div>
 
         <script>
@@ -209,8 +234,9 @@ p {
                     const recipeContainerDiv = document.createElement('div');
                     recipeContainerDiv.classList.add('recipe-item');
 
+
                     const recipeHtml = `
-                        <div>
+                        <div class="meal-card">
                             <img src="${recipe.strMealThumb}" alt="${recipe.strMeal}" />
                             <h2>${recipe.strMeal}</h2>
                             <button class="like-btn" data-meal-name="${recipe.strMeal}" data-image-url="${recipe.strMealThumb}">&#10084; Like</button>
@@ -280,7 +306,67 @@ p {
                 likedRecipes.splice(index, 1);
             }
 
+ const feedbackForm = document.getElementById('feedback-form');
+        feedbackForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const name = document.getElementById('feedback-name').value;
+            const email = document.getElementById('feedback-email').value;
+            const message = document.getElementById('feedback-message').value;
+
+            // Save the message to local storage (you would replace this with server logic)
+            const messages = JSON.parse(localStorage.getItem('messages')) || [];
+            messages.push({ name, email, message, response: '' });
+            localStorage.setItem('messages', JSON.stringify(messages));
+
+            // Display all messages
+            displayMessages();
+
+            // You can add logic here to send the feedback data to your server or handle it as needed.
+        });
+        function displayMessages() {
+            const feedbackMessagesContainer = document.getElementById('feedback-messages');
+            feedbackMessagesContainer.innerHTML = '';
+
+            // Retrieve messages from local storage
+            const messages = JSON.parse(localStorage.getItem('messages')) || [];
+
+            messages.forEach((msg, index) => {
+                const messageDiv = document.createElement('div');
+                messageDiv.innerHTML = `
+                    <p><strong>${msg.name}</strong> (${msg.email}): ${msg.message}</p>
+                    <p><strong>Response:</strong> ${msg.response}</p>
+                    <button class="respond-btn" data-index="${index}">Respond</button>
+                `;
+                feedbackMessagesContainer.appendChild(messageDiv);
+            });
+
+            addRespondListeners();
+        }
+
+        function addRespondListeners() {
+            const respondButtons = document.querySelectorAll('.respond-btn');
+            respondButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const index = button.dataset.index;
+                    const messages = JSON.parse(localStorage.getItem('messages')) || [];
+                    const respondentEmail = messages[index].email;
+
+                    // Prompt for response (you can replace this with your preferred UI for responding)
+                    const response = prompt(`Respond to ${respondentEmail}:`);
+
+                    // Save response (you would replace this with server logic)
+                    messages[index].response = response;
+                    localStorage.setItem('messages', JSON.stringify(messages));
+
+                    // Refresh displayed messages
+                    displayMessages();
+                });
+            });
+        }
+
             fetchCategories();
+            displayMessages();
+
         });
     </script>
 </body>
