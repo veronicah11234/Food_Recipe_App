@@ -49,8 +49,8 @@
 
         .meal-card {
             position: relative;
-            width: 250px;
-            margin: 10px;
+            width: 200px;
+            margin: 5px;
             padding: 15px;
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -110,6 +110,11 @@
         <!-- Container for displaying liked recipes -->
         <div id="liked-recipes-container"></div>
 
+        <div id="sold-items-container">
+            <h2>Sold Items</h2>
+            <!-- Sold items will be displayed here -->
+        </div><br><br>
+
         <div id="testimony-form">
             <h2>Share Your Testimony</h2>
             <form id="testimony-form">
@@ -126,37 +131,83 @@
     </div>
 
     <script>
-        // Array to store liked recipes
-        let likedRecipes = [];
+         let likedRecipes = [];
+    let soldItems = [];
 
-        // Execute code when the DOM content is loaded
+    function displaySoldItems() {
+        const soldItemsContainer = document.getElementById('sold-items-container');
+        soldItemsContainer.innerHTML = '';
+
+        const soldItemsTitle = document.createElement('h2');
+        soldItemsTitle.textContent = 'Sold Items';
+        soldItemsContainer.appendChild(soldItemsTitle);
+
+        soldItems.forEach(item => {
+            const soldItemDiv = document.createElement('div');
+            soldItemDiv.classList.add('sold-item');
+            soldItemDiv.innerHTML = `
+                <p><strong>${item.name}:</strong> $${item.price}</p>
+            `;
+            soldItemsContainer.appendChild(soldItemDiv);
+        });
+
+        const totalAmount = calculateTotalAmount();
+        const totalAmountDiv = document.createElement('div');
+        totalAmountDiv.innerHTML = `<p><strong>Total Amount:</strong> $${totalAmount}</p>`;
+        soldItemsContainer.appendChild(totalAmountDiv);
+    }
+
+    function purchaseRecipe(mealName, price) {
+        const purchasedItem = {
+            name: mealName,
+            price: price
+        };
+
+        soldItems.push(purchasedItem);
+        displaySoldItems();
+        window.scrollTo(0, document.body.scrollHeight);
+        return false; // This will prevent the default form submission behavior
+    }
+
+
+
+    function calculateTotalAmount() {
+        return soldItems.reduce((total, item) => total + parseFloat(item.price), 0).toFixed(2);
+        }
+
+        function purchaseRecipe(mealName, price) {
+            const purchasedItem = {
+                name: mealName,
+                price: price
+            };
+
+            soldItems.push(purchasedItem);
+            displaySoldItems();
+            window.scrollTo(0, document.body.scrollHeight);
+            alert(`Purchased "${mealName}" for $${price}`);
+        }
+
+
+
         document.addEventListener('DOMContentLoaded', function () {
-            // Get references to DOM elements
             const categoryDropdown = document.getElementById('category-dropdown');
             const recipeContainer = document.getElementById('recipe-container');
             const likedRecipesContainer = document.getElementById('liked-recipes-container');
 
-            // Function to fetch recipe categories from the API
             async function fetchCategories() {
-                // API endpoint for recipe categories
                 const apiUrl = 'https://www.themealdb.com/api/json/v1/1/categories.php';
 
                 try {
-                    // Fetch data from the API
                     const response = await fetch(apiUrl);
                     const data = await response.json();
 
                     if (response.ok) {
-                        // Display fetched categories in the dropdown
                         displayCategories(data.categories);
-                        // Fetch all recipes on page load
                         fetchAllRecipes();
                     } else {
-                        // Display an error message if fetching categories fails
                         recipeContainer.innerHTML = `<p>Error fetching categories.</p>`;
                     }
                 } catch (error) {
-                    // Log an error if the fetch operation fails
                     console.error('Error fetching categories:', error);
                 }
             }
@@ -175,101 +226,88 @@
                 fetchRandomRecipe(category);
             });
 
-           
-            // Event listener for mousedown event on the recipe container
             recipeContainer.addEventListener('mousedown', function (event) {
                 const target = event.target;
-                // Check if the clicked element or its parent is a 'like-btn'
                 const isLikeButton = target.classList.contains('like-btn') || target.closest('.like-btn');
 
                 if (isLikeButton) {
-                    // If it's a 'like-btn', extract meal name and image URL and like the recipe
                     const mealName = target.dataset.mealName;
                     const imageUrl = target.dataset.imageUrl;
                     likeRecipe(mealName, imageUrl);
                 } else if (target.classList.contains('remove-btn')) {
-                    // If it's a 'remove-btn', remove the recipe from liked recipes and update the display
                     const index = target.dataset.index;
                     removeRecipe(index);
                     displayFavorites();
                     displaySoldItems();
                 } else if (target.classList.contains('purchase-btn')) {
-                    // If it's a 'purchase-btn', extract meal name and price and purchase the recipe
                     const mealName = target.dataset.mealName;
                     const price = target.dataset.price;
                     purchaseRecipe(mealName, price);
                 }
             });
 
-            // Function to fetch random recipes based on the selected category
             async function fetchRandomRecipe(category) {
                 const apiUrl = category
                     ? `https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`
                     : 'https://www.themealdb.com/api/json/v1/1/search.php?s=';
 
                 try {
-                    // Fetch recipes based on the category from the API
                     const response = await fetch(apiUrl);
                     const data = await response.json();
 
                     if (response.ok && data.meals && data.meals.length > 0) {
-                        // Display the fetched recipes
                         displayRecipes(data.meals);
                     } else {
-                        // Display a message if no recipes are found
                         recipeContainer.innerHTML = `<p>No recipes found.</p>`;
                     }
                 } catch (error) {
-                    // Log an error if the fetch operation fails
                     console.error('Error fetching recipe:', error);
                 }
             }
 
             function fetchAllRecipes() {
-                // Fetch random recipes when the page loads
                 fetchRandomRecipe();
             }
+
             function displayRecipes(recipes) {
-            recipeContainer.innerHTML = '';
+                recipeContainer.innerHTML = '';
 
-            recipes.forEach(recipe => {
-                const recipeContainerDiv = document.createElement('div');
-                recipeContainerDiv.classList.add('recipe-item');
+                recipes.forEach(recipe => {
+                    const recipeContainerDiv = document.createElement('div');
+                    recipeContainerDiv.classList.add('recipe-item');
 
-                const mealName = recipe.strMeal || '';
-                const imageUrl = recipe.strMealThumb || '';
-                const category = recipe.strCategory || '';
-                const area = recipe.strArea || '';
-                const description = recipe.strInstructions || '';
-                const truncatedDescription = description.length > 100 ? description.substring(0, 100) + '...' : description;
+                    const mealName = recipe.strMeal || '';
+                    const imageUrl = recipe.strMealThumb || '';
+                    const category = recipe.strCategory || '';
+                    const area = recipe.strArea || '';
+                    const description = recipe.strInstructions || '';
+                    const truncatedDescription = description.length > 100 ? description.substring(0, 100) + '...' : description;
 
-                const recipeHtml = `
-                    <div class="meal-card">
-                        <button class="like-btn" data-meal-name="${mealName}" data-image-url="${imageUrl}">&#10084; Like</button>
-                        <img src="${imageUrl}" alt="${mealName}" />
-                        <h2>${mealName}</h2>
-                        <p>${category}</p>
-                        <p>${area}</p>
-                        ${description ? `<p class="description-truncated">${truncatedDescription}</p>` : ''}
-                        ${description ? `<a class="see-more-link" href="#" data-description="${description}">See More</a>` : ''}
-                        <div class="price-purchase-container">
-                            <button class="purchase-btn" data-meal-name="${mealName}" data-price="10.00">Purchase</button>
-                            <button class="price-btn" data-price="10.00">$${(Math.random() * 10).toFixed(2)}</button>
+                    const recipeHtml = `
+                        <div class="meal-card">
+                            <button class="like-btn" data-meal-name="${mealName}" data-image-url="${imageUrl}">&#10084; Like</button>
+                            <img src="${imageUrl}" alt="${mealName}" />
+                            <h2>${mealName}</h2>
+                            <p>${category}</p>
+                            <p>${area}</p>
+                            ${description ? `<p class="description-truncated">${truncatedDescription}</p>` : ''}
+                            ${description ? `<a class="see-more-link" href="#" data-description="${description}">See More</a>` : ''}<br>
+                            <div class="price-purchase-container">
+                                <button class="purchase-btn" data-meal-name="${mealName}" data-price="10.00">Purchase</button>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
 
-                if (mealName && imageUrl) {
-                    recipeContainerDiv.innerHTML = recipeHtml;
-                    recipeContainer.appendChild(recipeContainerDiv);
-                }
-            });
+                    if (mealName && imageUrl) {
+                        recipeContainerDiv.innerHTML = recipeHtml;
+                        recipeContainer.appendChild(recipeContainerDiv);
+                    }
+                });
 
-            addLikeListeners();
-            addSeeMoreListeners();
-            addPurchaseListeners();
-        }
-
+                addLikeListeners();
+                addSeeMoreListeners();
+                addPurchaseListeners();
+            }
 
             function addLikeListeners() {
                 const likeButtons = document.querySelectorAll('.like-btn');
@@ -281,11 +319,12 @@
                     });
                 });
             }
-
+            
             function addPurchaseListeners() {
                 const purchaseButtons = document.querySelectorAll('.purchase-btn');
                 purchaseButtons.forEach(button => {
-                    button.addEventListener('click', function () {
+                    button.addEventListener('click', function (event) {
+                        event.preventDefault(); // Prevent the default form submission
                         const mealName = button.dataset.mealName;
                         const price = button.dataset.price;
                         purchaseRecipe(mealName, price);
@@ -293,15 +332,15 @@
                 });
             }
 
-        function addSeeMoreListeners() {
-            const seeMoreLinks = document.querySelectorAll('.see-more-link');
-            seeMoreLinks.forEach(link => {
-                link.addEventListener('click', function (event) {
-                    event.preventDefault();
-                    const description = link.dataset.description || '';
-                    alert(description);
+            function addSeeMoreListeners() {
+                const seeMoreLinks = document.querySelectorAll('.see-more-link');
+                seeMoreLinks.forEach(link => {
+                    link.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        const description = link.dataset.description || '';
+                        alert(description);
+                    });
                 });
-            });
             }
 
             function likeRecipe(mealName, imageUrl) {
@@ -312,44 +351,11 @@
                 alert(`Recipe "${mealName}" liked!`);
                 displayFavorites();
             }
-            function purchaseRecipe(mealName, price) {
-                const purchasedItem = {
-                    name: mealName,
-                    price: price
-                };
-
-                // Add the purchased item to a list of sold items
-                soldItems.push(purchasedItem);
-
-                // Display the sold items
-                displaySoldItems();
-
-                alert(`Purchased "${mealName}" for $${price}`);
-            }
-            function displaySoldItems() {
-                const soldItemsContainer = document.getElementById('sold-items-container');
-                soldItemsContainer.innerHTML = '';
-
-                const soldItemsTitle = document.createElement('h2');
-                soldItemsTitle.textContent = 'Sold Items';
-                soldItemsContainer.appendChild(soldItemsTitle);
-
-                soldItems.forEach(item => {
-                    const soldItemDiv = document.createElement('div');
-                    soldItemDiv.classList.add('sold-item');
-                    soldItemDiv.innerHTML = `
-                        <p><strong>${item.name}:</strong> $${item.price}</p>
-                    `;
-                    soldItemsContainer.appendChild(soldItemDiv);
-                });
-            }
 
             function displayFavorites() {
-                const likedRecipesContainer = document.getElementById('liked-recipes-container');
+                likedRecipesContainer.innerHTML = '';
                 const favoritesTitle = document.createElement('h2');
                 favoritesTitle.textContent = 'Liked Recipes';
-                likedRecipesContainer.innerHTML = ''; 
-
                 likedRecipesContainer.appendChild(favoritesTitle);
 
                 const favoritesContent = likedRecipes.map((recipe, index) => `
@@ -392,15 +398,13 @@
                 storedTestimonies.push({ name, message, response: '' });
                 localStorage.setItem('testimonies', JSON.stringify(storedTestimonies));
 
-                // Display all testimonies
                 displayTestimonies();
             });
 
-            function displayTestimonies() {
+        function displayTestimonies() {
                 const testimonyMessagesContainer = document.getElementById('testimony-messages');
                 testimonyMessagesContainer.innerHTML = '';
 
-                // Retrieve testimonies from local storage
                 const storedTestimonies = JSON.parse(localStorage.getItem('testimonies')) || [];
 
                 storedTestimonies.forEach((testimony, index) => {
@@ -425,16 +429,13 @@
 
                         const response = prompt(`Respond to ${storedTestimonies[index].name}'s testimony:`);
 
-                        // Save response (you would replace this with server logic)
                         storedTestimonies[index].response = response;
                         localStorage.setItem('testimonies', JSON.stringify(storedTestimonies));
 
-                        // Refresh displayed testimonies
                         displayTestimonies();
                     });
                 });
             }
-            
 
             fetchCategories();
             displayTestimonies();
