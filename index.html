@@ -3,93 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Food Recipe App</title>
+    <title>Food Recipe App</title>
     <style>
         body {
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
-}
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
 
-.container {
-    max-width: none;
-    margin: 0;
-    padding: 20px;
-    background-color: #dea1c6;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
+        .container {
+            max-width: none;
+            margin: 0;
+            padding: 20px;
+            background-color: #dea1c6;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
 
-h1 {
-    text-align: center;
-    color: #333;
-    margin: 40px 0;
-    position: relative;
-    font-size: 2.5em;
-}
+        h1 {
+            text-align: center;
+            color: #333;
+            margin: 40px 0;
+            position: relative;
+            font-size: 2.5em;
+        }
 
-/* h1::after {
-    content: '🍲';
-    font-size: 1.5em;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    margin-left: 10px;
-} */
+        div {
+            margin-bottom: 15px;
+        }
 
-div {
-    margin-bottom: 15px;
-}
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
 
-label {
-    display: block;
-    margin-bottom: 5px;
-}
+        select, button {
+            padding: 10px;
+        }
 
-select, button {
-    padding: 10px;
-}
+        #recipe-container,
+        #liked-recipes-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
 
-#recipe-container,
-#liked-recipes-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    /* background-color: #28c3b9; */
-}
+        .meal-card {
+            position: relative;
+            width: 250px;
+            margin: 10px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            box-sizing: border-box;
+        }
 
-.meal-card{
-    /* background: #f00505; */
-}
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
 
-.meal-card button{
-    background: #cfcc11;
-}
+        .like-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #cfcc11;
+            padding: 5px;
+            cursor: pointer;
+        }
 
-.recipe-item {
-    width: 200px;
-    margin: 10px;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    box-sizing: border-box;
-}
+        .recipe-item.liked {
+            background-color: #ffdb58;
+        }
 
-img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 5px;
-}
+        p {
+            margin-top: 10px;
+            color: #666;
+        }
 
-.recipe-item.liked {
-    background-color: #ffdb58; /* Different color for liked recipes */
-}
-
-p {
-    margin-top: 10px;
-    color: #666;
-}
+        .price-purchase-container .purchase-btn{
+            margin-right: 16px;
+            background: #48bd12;
+        }
+        .price-purchase-container .price-btn{
+            margin-left: 16px;
+            background: #48bd12;
+        }
     </style>
 </head>
 <body>
@@ -109,146 +110,166 @@ p {
         <!-- Container for displaying liked recipes -->
         <div id="liked-recipes-container"></div>
 
-        <div id="feedback-form">
-            <h2>Feedback</h2>
-            <form id="feedback-form">
-                <label for="feedback-name">Name:</label>
-                <input type="text" id="feedback-name" name="feedback-name" required>
-                <label for="feedback-email">Email:</label>
-                <input type="email" id="feedback-email" name="feedback-email" required>
-                <label for="feedback-message">Message:</label>
-                <textarea id="feedback-message" name="feedback-message" rows="4" required></textarea>
-                <button type="submit">Submit Feedback</button>
+        <div id="testimony-form">
+            <h2>Share Your Testimony</h2>
+            <form id="testimony-form">
+                <label for="testimony-name">Name:</label>
+                <input type="text" id="testimony-name" name="testimony-name" required>
+                <label for="testimony-message">Testimony:</label>
+                <textarea id="testimony-message" name="testimony-message" rows="4" required></textarea>
+                <button type="submit">Submit Testimony</button>
             </form>
         </div>
-
-        <!-- Display feedback message -->
-        <div id="feedback-response" style="display: none; margin-top: 20px;"></div>
+        
+        <!-- Display testimony messages -->
+        <div id="testimony-messages"></div>
     </div>
-    </div>
 
-        <script>
-            // Array to store liked recipes
-            let likedRecipes = [];
-        
-            // Execute code when the DOM content is loaded
-            document.addEventListener('DOMContentLoaded', function () {
-                // Get references to DOM elements
-                const categoryDropdown = document.getElementById('category-dropdown');
-                const recipeContainer = document.getElementById('recipe-container');
-                const likedRecipesContainer = document.getElementById('liked-recipes-container');
-        
-                // Function to fetch recipe categories from the API
-                async function fetchCategories() {
-                    // API endpoint for recipe categories
-                    const apiUrl = 'https://www.themealdb.com/api/json/v1/1/categories.php';
-        
-                    try {
-                        // Fetch data from the API
-                        const response = await fetch(apiUrl);
-                        const data = await response.json();
-        
-                        if (response.ok) {
-                            // Display fetched categories in the dropdown
-                            displayCategories(data.categories);
-                            // Fetch all recipes on page load
-                            fetchAllRecipes();
-                        } else {
-                            // Display an error message if fetching categories fails
-                            recipeContainer.innerHTML = `<p>Error fetching categories.</p>`;
-                        }
-                    } catch (error) {
-                        // Log an error if the fetch operation fails
-                        console.error('Error fetching categories:', error);
+    <script>
+        // Array to store liked recipes
+        let likedRecipes = [];
+
+        // Execute code when the DOM content is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get references to DOM elements
+            const categoryDropdown = document.getElementById('category-dropdown');
+            const recipeContainer = document.getElementById('recipe-container');
+            const likedRecipesContainer = document.getElementById('liked-recipes-container');
+
+            // Function to fetch recipe categories from the API
+            async function fetchCategories() {
+                // API endpoint for recipe categories
+                const apiUrl = 'https://www.themealdb.com/api/json/v1/1/categories.php';
+
+                try {
+                    // Fetch data from the API
+                    const response = await fetch(apiUrl);
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        // Display fetched categories in the dropdown
+                        displayCategories(data.categories);
+                        // Fetch all recipes on page load
+                        fetchAllRecipes();
+                    } else {
+                        // Display an error message if fetching categories fails
+                        recipeContainer.innerHTML = `<p>Error fetching categories.</p>`;
                     }
+                } catch (error) {
+                    // Log an error if the fetch operation fails
+                    console.error('Error fetching categories:', error);
                 }
-    
-                function displayCategories(categories) {
-                    categories.forEach(category => {
-                        const option = document.createElement('option');
-                        option.value = category.strCategory;
-                        option.textContent = category.strCategory;
-                        categoryDropdown.appendChild(option);
-                    });
-                }
-    
-                categoryDropdown.addEventListener('change', function () {
-                    const category = categoryDropdown.value;
-                    fetchRandomRecipe(category);
+            }
+
+            function displayCategories(categories) {
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.strCategory;
+                    option.textContent = category.strCategory;
+                    categoryDropdown.appendChild(option);
                 });
-    
-                // ... (previous code)
-     // Event listener for mousedown event on the recipe container
-     recipeContainer.addEventListener('mousedown', function (event) {
-            const target = event.target;
-            // Check if the clicked element or its parent is a 'like-btn'
-            const isLikeButton = target.classList.contains('like-btn') || target.closest('.like-btn');
-
-            if (isLikeButton) {
-                // If it's a 'like-btn', extract meal name and image URL and like the recipe
-                const mealName = target.dataset.mealName;
-                const imageUrl = target.dataset.imageUrl;
-                likeRecipe(mealName, imageUrl);
-            } else if (target.classList.contains('remove-btn')) {
-                // If it's a 'remove-btn', remove the recipe from liked recipes and update the display
-                const index = target.dataset.index;
-                removeRecipe(index);
-                displayFavorites();
             }
-        });
 
-        // Function to fetch random recipes based on the selected category
-        async function fetchRandomRecipe(category) {
-            const apiUrl = category
-                ? `https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`
-                : 'https://www.themealdb.com/api/json/v1/1/search.php?s=';
+            categoryDropdown.addEventListener('change', function () {
+                const category = categoryDropdown.value;
+                fetchRandomRecipe(category);
+            });
 
-            try {
-                // Fetch recipes based on the category from the API
-                const response = await fetch(apiUrl);
-                const data = await response.json();
+           
+            // Event listener for mousedown event on the recipe container
+            recipeContainer.addEventListener('mousedown', function (event) {
+                const target = event.target;
+                // Check if the clicked element or its parent is a 'like-btn'
+                const isLikeButton = target.classList.contains('like-btn') || target.closest('.like-btn');
 
-                if (response.ok && data.meals && data.meals.length > 0) {
-                    // Display the fetched recipes
-                    displayRecipes(data.meals);
-                } else {
-                    // Display a message if no recipes are found
-                    recipeContainer.innerHTML = `<p>No recipes found.</p>`;
+                if (isLikeButton) {
+                    // If it's a 'like-btn', extract meal name and image URL and like the recipe
+                    const mealName = target.dataset.mealName;
+                    const imageUrl = target.dataset.imageUrl;
+                    likeRecipe(mealName, imageUrl);
+                } else if (target.classList.contains('remove-btn')) {
+                    // If it's a 'remove-btn', remove the recipe from liked recipes and update the display
+                    const index = target.dataset.index;
+                    removeRecipe(index);
+                    displayFavorites();
+                    displaySoldItems();
+                } else if (target.classList.contains('purchase-btn')) {
+                    // If it's a 'purchase-btn', extract meal name and price and purchase the recipe
+                    const mealName = target.dataset.mealName;
+                    const price = target.dataset.price;
+                    purchaseRecipe(mealName, price);
                 }
-            } catch (error) {
-                // Log an error if the fetch operation fails
-                console.error('Error fetching recipe:', error);
-            }
-        }
+            });
 
+            // Function to fetch random recipes based on the selected category
+            async function fetchRandomRecipe(category) {
+                const apiUrl = category
+                    ? `https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`
+                    : 'https://www.themealdb.com/api/json/v1/1/search.php?s=';
+
+                try {
+                    // Fetch recipes based on the category from the API
+                    const response = await fetch(apiUrl);
+                    const data = await response.json();
+
+                    if (response.ok && data.meals && data.meals.length > 0) {
+                        // Display the fetched recipes
+                        displayRecipes(data.meals);
+                    } else {
+                        // Display a message if no recipes are found
+                        recipeContainer.innerHTML = `<p>No recipes found.</p>`;
+                    }
+                } catch (error) {
+                    // Log an error if the fetch operation fails
+                    console.error('Error fetching recipe:', error);
+                }
+            }
 
             function fetchAllRecipes() {
                 // Fetch random recipes when the page loads
                 fetchRandomRecipe();
             }
-
             function displayRecipes(recipes) {
-                recipeContainer.innerHTML = '';
+            recipeContainer.innerHTML = '';
 
-                recipes.forEach(recipe => {
-                    const recipeContainerDiv = document.createElement('div');
-                    recipeContainerDiv.classList.add('recipe-item');
+            recipes.forEach(recipe => {
+                const recipeContainerDiv = document.createElement('div');
+                recipeContainerDiv.classList.add('recipe-item');
 
+                const mealName = recipe.strMeal || '';
+                const imageUrl = recipe.strMealThumb || '';
+                const category = recipe.strCategory || '';
+                const area = recipe.strArea || '';
+                const description = recipe.strInstructions || '';
+                const truncatedDescription = description.length > 100 ? description.substring(0, 100) + '...' : description;
 
-                    const recipeHtml = `
-                        <div class="meal-card">
-                            <img src="${recipe.strMealThumb}" alt="${recipe.strMeal}" />
-                            <h2>${recipe.strMeal}</h2>
-                            <button class="like-btn" data-meal-name="${recipe.strMeal}" data-image-url="${recipe.strMealThumb}">&#10084; Like</button>
+                const recipeHtml = `
+                    <div class="meal-card">
+                        <button class="like-btn" data-meal-name="${mealName}" data-image-url="${imageUrl}">&#10084; Like</button>
+                        <img src="${imageUrl}" alt="${mealName}" />
+                        <h2>${mealName}</h2>
+                        <p>${category}</p>
+                        <p>${area}</p>
+                        ${description ? `<p class="description-truncated">${truncatedDescription}</p>` : ''}
+                        ${description ? `<a class="see-more-link" href="#" data-description="${description}">See More</a>` : ''}
+                        <div class="price-purchase-container">
+                            <button class="purchase-btn" data-meal-name="${mealName}" data-price="10.00">Purchase</button>
+                            <button class="price-btn" data-price="10.00">$${(Math.random() * 10).toFixed(2)}</button>
                         </div>
-                    `;
+                    </div>
+                `;
 
+                if (mealName && imageUrl) {
                     recipeContainerDiv.innerHTML = recipeHtml;
                     recipeContainer.appendChild(recipeContainerDiv);
-                });
+                }
+            });
 
-                addLikeListeners();
-            }
+            addLikeListeners();
+            addSeeMoreListeners();
+            addPurchaseListeners();
+        }
+
 
             function addLikeListeners() {
                 const likeButtons = document.querySelectorAll('.like-btn');
@@ -261,6 +282,28 @@ p {
                 });
             }
 
+            function addPurchaseListeners() {
+                const purchaseButtons = document.querySelectorAll('.purchase-btn');
+                purchaseButtons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        const mealName = button.dataset.mealName;
+                        const price = button.dataset.price;
+                        purchaseRecipe(mealName, price);
+                    });
+                });
+            }
+
+        function addSeeMoreListeners() {
+            const seeMoreLinks = document.querySelectorAll('.see-more-link');
+            seeMoreLinks.forEach(link => {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    const description = link.dataset.description || '';
+                    alert(description);
+                });
+            });
+            }
+
             function likeRecipe(mealName, imageUrl) {
                 likedRecipes.push({
                     name: mealName,
@@ -269,12 +312,43 @@ p {
                 alert(`Recipe "${mealName}" liked!`);
                 displayFavorites();
             }
+            function purchaseRecipe(mealName, price) {
+                const purchasedItem = {
+                    name: mealName,
+                    price: price
+                };
+
+                // Add the purchased item to a list of sold items
+                soldItems.push(purchasedItem);
+
+                // Display the sold items
+                displaySoldItems();
+
+                alert(`Purchased "${mealName}" for $${price}`);
+            }
+            function displaySoldItems() {
+                const soldItemsContainer = document.getElementById('sold-items-container');
+                soldItemsContainer.innerHTML = '';
+
+                const soldItemsTitle = document.createElement('h2');
+                soldItemsTitle.textContent = 'Sold Items';
+                soldItemsContainer.appendChild(soldItemsTitle);
+
+                soldItems.forEach(item => {
+                    const soldItemDiv = document.createElement('div');
+                    soldItemDiv.classList.add('sold-item');
+                    soldItemDiv.innerHTML = `
+                        <p><strong>${item.name}:</strong> $${item.price}</p>
+                    `;
+                    soldItemsContainer.appendChild(soldItemDiv);
+                });
+            }
 
             function displayFavorites() {
                 const likedRecipesContainer = document.getElementById('liked-recipes-container');
                 const favoritesTitle = document.createElement('h2');
                 favoritesTitle.textContent = 'Liked Recipes';
-                likedRecipesContainer.innerHTML = ''; // Clear existing content
+                likedRecipesContainer.innerHTML = ''; 
 
                 likedRecipesContainer.appendChild(favoritesTitle);
 
@@ -306,69 +380,65 @@ p {
                 likedRecipes.splice(index, 1);
             }
 
- const feedbackForm = document.getElementById('feedback-form');
-        feedbackForm.addEventListener('submit', function (event) {
-            event.preventDefault();
-            const name = document.getElementById('feedback-name').value;
-            const email = document.getElementById('feedback-email').value;
-            const message = document.getElementById('feedback-message').value;
+            let testimonies = [];
 
-            // Save the message to local storage (you would replace this with server logic)
-            const messages = JSON.parse(localStorage.getItem('messages')) || [];
-            messages.push({ name, email, message, response: '' });
-            localStorage.setItem('messages', JSON.stringify(messages));
+            const testimonyForm = document.getElementById('testimony-form');
+            testimonyForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const name = document.getElementById('testimony-name').value;
+                const message = document.getElementById('testimony-message').value;
 
-            // Display all messages
-            displayMessages();
+                const storedTestimonies = JSON.parse(localStorage.getItem('testimonies')) || [];
+                storedTestimonies.push({ name, message, response: '' });
+                localStorage.setItem('testimonies', JSON.stringify(storedTestimonies));
 
-            // You can add logic here to send the feedback data to your server or handle it as needed.
-        });
-        function displayMessages() {
-            const feedbackMessagesContainer = document.getElementById('feedback-messages');
-            feedbackMessagesContainer.innerHTML = '';
-
-            // Retrieve messages from local storage
-            const messages = JSON.parse(localStorage.getItem('messages')) || [];
-
-            messages.forEach((msg, index) => {
-                const messageDiv = document.createElement('div');
-                messageDiv.innerHTML = `
-                    <p><strong>${msg.name}</strong> (${msg.email}): ${msg.message}</p>
-                    <p><strong>Response:</strong> ${msg.response}</p>
-                    <button class="respond-btn" data-index="${index}">Respond</button>
-                `;
-                feedbackMessagesContainer.appendChild(messageDiv);
+                // Display all testimonies
+                displayTestimonies();
             });
 
-            addRespondListeners();
-        }
+            function displayTestimonies() {
+                const testimonyMessagesContainer = document.getElementById('testimony-messages');
+                testimonyMessagesContainer.innerHTML = '';
 
-        function addRespondListeners() {
-            const respondButtons = document.querySelectorAll('.respond-btn');
-            respondButtons.forEach(button => {
-                button.addEventListener('click', function () {
-                    const index = button.dataset.index;
-                    const messages = JSON.parse(localStorage.getItem('messages')) || [];
-                    const respondentEmail = messages[index].email;
+                // Retrieve testimonies from local storage
+                const storedTestimonies = JSON.parse(localStorage.getItem('testimonies')) || [];
 
-                    // Prompt for response (you can replace this with your preferred UI for responding)
-                    const response = prompt(`Respond to ${respondentEmail}:`);
-
-                    // Save response (you would replace this with server logic)
-                    messages[index].response = response;
-                    localStorage.setItem('messages', JSON.stringify(messages));
-
-                    // Refresh displayed messages
-                    displayMessages();
+                storedTestimonies.forEach((testimony, index) => {
+                    const testimonyDiv = document.createElement('div');
+                    testimonyDiv.innerHTML = `
+                        <p><strong>${testimony.name}:</strong> ${testimony.message}</p>
+                        <p><strong>Response:</strong> ${testimony.response}</p>
+                        <button class="respond-testimony-btn" data-index="${index}">Respond</button>
+                    `;
+                    testimonyMessagesContainer.appendChild(testimonyDiv);
                 });
-            });
-        }
+
+                addRespondTestimonyListeners();
+            }
+
+            function addRespondTestimonyListeners() {
+                const respondTestimonyButtons = document.querySelectorAll('.respond-testimony-btn');
+                respondTestimonyButtons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        const index = button.dataset.index;
+                        const storedTestimonies = JSON.parse(localStorage.getItem('testimonies')) || [];
+
+                        const response = prompt(`Respond to ${storedTestimonies[index].name}'s testimony:`);
+
+                        // Save response (you would replace this with server logic)
+                        storedTestimonies[index].response = response;
+                        localStorage.setItem('testimonies', JSON.stringify(storedTestimonies));
+
+                        // Refresh displayed testimonies
+                        displayTestimonies();
+                    });
+                });
+            }
+            
 
             fetchCategories();
-            displayMessages();
-
+            displayTestimonies();
         });
     </script>
 </body>
-
 </html>
