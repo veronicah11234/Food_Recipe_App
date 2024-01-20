@@ -5,93 +5,136 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Recipe App</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-        }
+     body {
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+    }
 
-        .container {
-            max-width: none;
-            margin: 0;
-            padding: 20px;
-            background-color: #dea1c6;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
+    .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
 
-        h1 {
-            text-align: center;
-            color: #333;
-            margin: 40px 0;
-            position: relative;
-            font-size: 2.5em;
-        }
+    h1 {
+        text-align: center;
+        color: #06523e;
+        margin-bottom: 30px;
+        font-size: 2.5em;
+    }
 
-        div {
-            margin-bottom: 15px;
-        }
+    label {
+        display: block;
+        margin-bottom: 10px;
+    }
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
+    select, button {
+        padding: 10px;
+        font-size: 16px;
+    }
 
-        select, button {
-            padding: 10px;
-        }
+    hr {
+        border: 1px solid #ddd;
+        margin-top: 20px;
+        margin-bottom: 40px;
+    }
 
-        #recipe-container,
-        #liked-recipes-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-        }
+    #recipe-container,
+    #liked-recipes-container,
+    #sold-items-container,
+    #testimony-form,
+    #testimony-messages {
+        margin-bottom: 40px;
+    }
 
-        .meal-card {
-            position: relative;
-            width: 200px;
-            margin: 5px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            box-sizing: border-box;
-        }
+    #recipe-container,
+    #liked-recipes-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
 
-        img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
-        }
+    .meal-card {
+        position: relative;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        box-sizing: border-box;
+        background-color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
 
-        .like-btn {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: #cfcc11;
-            padding: 5px;
-            cursor: pointer;
-        }
+    img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
 
-        .recipe-item.liked {
-            background-color: #ffdb58;
-        }
+    .like-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #cfcc11;
+        padding: 5px 10px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+    }
 
-        p {
-            margin-top: 10px;
-            color: #666;
-        }
+    .recipe-item.liked {
+        background-color: #ffdb58;
+    }
 
-        .price-purchase-container .purchase-btn{
-            margin-right: 16px;
-            background: #48bd12;
-        }
-        .price-purchase-container .price-btn{
-            margin-left: 16px;
-            background: #48bd12;
-        }
-    </style>
+    p {
+        color: #393833;
+        margin-bottom: 15px;
+    }
+
+    .description-truncated {
+        max-height: 100px;
+        overflow: hidden;
+    }
+
+    .see-more-link {
+        color: #06523e;
+        text-decoration: none;
+        display: block;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+
+    .see-more-link:hover {
+        text-decoration: underline;
+    }
+
+    .price-purchase-container {
+        margin-top: 20px;
+    }
+
+    .purchase-btn {
+        background: #48bd12;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 16px;
+    }
+</style>
 </head>
 <body>
     <!-- Main container for the entire app -->
@@ -105,6 +148,21 @@
         </div><hr>
         <!-- Container for displaying recipes dynamically -->
         <div id="recipe-container">
+
+            <div class="meal-card">
+                <button class="like-btn" data-meal-name="${mealName}" data-image-url="${imageUrl}">&#10084; Like</button>
+                <img src="${imageUrl}" alt="${mealName}" />
+                <h2>${mealName}</h2>
+                <p>${category}</p>
+                <p>${area}</p>
+                ${description ? `<p class="description-truncated">${truncatedDescription}</p>` : ''}
+                ${description ? `<a class="see-more-link" href="#" data-description="${description}">See More</a>` : ''}
+                <div class="price-purchase-container">
+                    <button class="purchase-btn" data-meal-name="${mealName}" data-price="${calculatePrice()}">Purchase</button>
+                </div>
+            </div>
+            
+            
             <!-- Recipe data will be dynamically inserted here -->
         </div>
         <!-- Container for displaying liked recipes -->
@@ -269,6 +327,12 @@
                 fetchRandomRecipe();
             }
 
+            function calculatePrice() {
+             // Your logic to calculate the price dynamically based on the recipe
+            // For now, I'll return a random price between 5 and 15
+            return (Math.random() * (15 - 5) + 5).toFixed(2);
+        }
+
             function displayRecipes(recipes) {
                 recipeContainer.innerHTML = '';
 
@@ -276,33 +340,33 @@
                     const recipeContainerDiv = document.createElement('div');
                     recipeContainerDiv.classList.add('recipe-item');
 
-                    const mealName = recipe.strMeal || '';
-                    const imageUrl = recipe.strMealThumb || '';
-                    const category = recipe.strCategory || '';
-                    const area = recipe.strArea || '';
-                    const description = recipe.strInstructions || '';
-                    const truncatedDescription = description.length > 100 ? description.substring(0, 100) + '...' : description;
+                         const mealName = recipe.strMeal || '';
+                        const imageUrl = recipe.strMealThumb || '';
+                        const category = recipe.strCategory || '';
+                        const area = recipe.strArea || '';
+                        const description = recipe.strInstructions || '';
+                        const truncatedDescription = description.length > 100 ? description.substring(0, 100) + '...' : description;
 
-                    const recipeHtml = `
-                        <div class="meal-card">
-                            <button class="like-btn" data-meal-name="${mealName}" data-image-url="${imageUrl}">&#10084; Like</button>
-                            <img src="${imageUrl}" alt="${mealName}" />
-                            <h2>${mealName}</h2>
-                            <p>${category}</p>
-                            <p>${area}</p>
-                            ${description ? `<p class="description-truncated">${truncatedDescription}</p>` : ''}
-                            ${description ? `<a class="see-more-link" href="#" data-description="${description}">See More</a>` : ''}<br>
-                            <div class="price-purchase-container">
-                                <button class="purchase-btn" data-meal-name="${mealName}" data-price="10.00">Purchase</button>
+                        const recipeHtml = `
+                            <div class="meal-card">
+                                <button class="like-btn" data-meal-name="${mealName}" data-image-url="${imageUrl}">&#10084; Like</button>
+                                <img src="${imageUrl}" alt="${mealName}" />
+                                <h2>${mealName}</h2>
+                                <p>${category}</p>
+                                <p>${area}</p>
+                                ${description ? `<p class="description-truncated">${truncatedDescription}</p>` : ''}
+                                ${description ? `<a class="see-more-link" href="#" data-description="${description}">See More</a>` : ''}<br>
+                                <div class="price-purchase-container">
+                                    <button class="purchase-btn" data-meal-name="${mealName}" data-price="${calculatePrice()}">Purchase</button>
+                                </div>
                             </div>
-                        </div>
-                    `;
+                        `;
 
-                    if (mealName && imageUrl) {
-                        recipeContainerDiv.innerHTML = recipeHtml;
-                        recipeContainer.appendChild(recipeContainerDiv);
-                    }
-                });
+                        if (mealName && imageUrl) {
+                            recipeContainerDiv.innerHTML = recipeHtml;
+                            recipeContainer.appendChild(recipeContainerDiv);
+                        }
+                    });
 
                 addLikeListeners();
                 addSeeMoreListeners();
@@ -421,21 +485,60 @@
             }
 
             function addRespondTestimonyListeners() {
-                const respondTestimonyButtons = document.querySelectorAll('.respond-testimony-btn');
-                respondTestimonyButtons.forEach(button => {
-                    button.addEventListener('click', function () {
-                        const index = button.dataset.index;
-                        const storedTestimonies = JSON.parse(localStorage.getItem('testimonies')) || [];
+        const respondTestimonyButtons = document.querySelectorAll('.respond-testimony-btn');
+        respondTestimonyButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const index = button.dataset.index;
+                const storedTestimonies = JSON.parse(localStorage.getItem('testimonies')) || [];
 
-                        const response = prompt(`Respond to ${storedTestimonies[index].name}'s testimony:`);
+                const response = prompt(`Respond to ${storedTestimonies[index].name}'s testimony:`);
 
-                        storedTestimonies[index].response = response;
-                        localStorage.setItem('testimonies', JSON.stringify(storedTestimonies));
+                storedTestimonies[index].response = response;
+                localStorage.setItem('testimonies', JSON.stringify(storedTestimonies));
 
-                        displayTestimonies();
-                    });
-                });
-            }
+                displayTestimonies();
+            });
+        });
+    }
+
+    function removeTestimony(index) {
+        const storedTestimonies = JSON.parse(localStorage.getItem('testimonies')) || [];
+        storedTestimonies.splice(index, 1);
+        localStorage.setItem('testimonies', JSON.stringify(storedTestimonies));
+        displayTestimonies();
+    }
+
+    function displayTestimonies() {
+        const testimonyMessagesContainer = document.getElementById('testimony-messages');
+        testimonyMessagesContainer.innerHTML = '';
+
+        // Retrieve testimonies from local storage
+        const storedTestimonies = JSON.parse(localStorage.getItem('testimonies')) || [];
+
+        storedTestimonies.forEach((testimony, index) => {
+            const testimonyDiv = document.createElement('div');
+            testimonyDiv.innerHTML = `
+                <p><strong>${testimony.name}:</strong> ${testimony.message}</p>
+                <p><strong>Response:</strong> ${testimony.response}</p>
+                <button class="respond-testimony-btn" data-index="${index}">Respond</button>
+                <button class="delete-testimony-btn" data-index="${index}">Delete</button>
+            `;
+            testimonyMessagesContainer.appendChild(testimonyDiv);
+        });
+
+        addRespondTestimonyListeners();
+        addDeleteTestimonyListeners();
+    }
+
+    function addDeleteTestimonyListeners() {
+        const deleteTestimonyButtons = document.querySelectorAll('.delete-testimony-btn');
+        deleteTestimonyButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const index = button.dataset.index;
+                removeTestimony(index);
+            });
+        });
+    }
 
             fetchCategories();
             displayTestimonies();
