@@ -396,6 +396,16 @@
                 });
             }
 
+            function addSeeMoreListeners() {
+                const seeMoreLinks = document.querySelectorAll('.see-more-link');
+                seeMoreLinks.forEach(link => {
+                    link.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        const description = link.dataset.description || '';
+                        alert(description);
+                    });
+                });
+            }
 
             function likeRecipe(mealName, imageUrl) {
                 likedRecipes.push({
