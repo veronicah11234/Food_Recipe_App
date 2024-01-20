@@ -192,8 +192,28 @@
          let likedRecipes = [];
     let soldItems = [];
 
-  
-     
+    function displaySoldItems() {
+        const soldItemsContainer = document.getElementById('sold-items-container');
+        soldItemsContainer.innerHTML = '';
+
+        const soldItemsTitle = document.createElement('h2');
+        soldItemsTitle.textContent = 'Sold Items';
+        soldItemsContainer.appendChild(soldItemsTitle);
+
+        soldItems.forEach(item => {
+            const soldItemDiv = document.createElement('div');
+            soldItemDiv.classList.add('sold-item');
+            soldItemDiv.innerHTML = `
+                <p><strong>${item.name}:</strong> $${item.price}</p>
+            `;
+            soldItemsContainer.appendChild(soldItemDiv);
+        });
+
+        const totalAmount = calculateTotalAmount();
+        const totalAmountDiv = document.createElement('div');
+        totalAmountDiv.innerHTML = `<p><strong>Total Amount:</strong> $${totalAmount}</p>`;
+        soldItemsContainer.appendChild(totalAmountDiv);
+    }
 
     function purchaseRecipe(mealName, price) {
         const purchasedItem = {
