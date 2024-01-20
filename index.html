@@ -407,15 +407,7 @@
                 });
             }
 
-            function likeRecipe(mealName, imageUrl) {
-                likedRecipes.push({
-                    name: mealName,
-                    image: imageUrl
-                });
-                alert(`Recipe "${mealName}" liked!`);
-                displayFavorites();
-            }
-
+          
             function displayFavorites() {
                 likedRecipesContainer.innerHTML = '';
                 const favoritesTitle = document.createElement('h2');
